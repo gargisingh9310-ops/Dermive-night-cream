@@ -97,7 +97,7 @@ export default function TravelingProductStage() {
     };
   }, [animPhase]);
 
-  // 2. MASTER SCROLL TIMELINE: Continuous Journey (Hero -> Benefits Hand [Palm] -> Smooth Gradual Fade-out)
+  // 2. MASTER SCROLL TIMELINE: Continuous Journey (Hero -> Benefits Hand [Palm] -> Hidden in Ingredients -> Purchase)
   useEffect(() => {
     const productEl = productContainerRef.current;
     const boxCapEl = boxCapLayerRef.current;
@@ -119,6 +119,29 @@ export default function TravelingProductStage() {
         const vh = window.innerHeight;
         const vw = window.innerWidth;
         return vw < 768 ? -vh * 0.02 : -vh * 0.035;
+      };
+
+      const getLeftX = () => {
+        const boxEl = document.getElementById('purchase-product-box');
+        if (boxEl) {
+          const rect = boxEl.getBoundingClientRect();
+          const boxCenterX = rect.left + rect.width / 2;
+          return boxCenterX - window.innerWidth / 2;
+        }
+        const vw = window.innerWidth;
+        if (vw < 1024) return 0;
+        return -Math.min(vw * 0.25, 340);
+      };
+
+      const getPurchaseY = () => {
+        const boxEl = document.getElementById('purchase-product-box');
+        if (boxEl) {
+          const rect = boxEl.getBoundingClientRect();
+          const boxCenterY = rect.top + rect.height / 2;
+          return boxCenterY - window.innerHeight / 2;
+        }
+        const vw = window.innerWidth;
+        return vw < 768 ? -20 : 0;
       };
 
       // Set initial centered state
@@ -160,13 +183,13 @@ export default function TravelingProductStage() {
         });
       }
 
-      // MASTER TIMELINE: Hero -> Hand section -> Smooth Gradual Fade-out
+      // MASTER TIMELINE: Hero -> Benefits (Hand) -> Hidden in Ingredients -> Purchase
       const masterTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#hero',
           start: 'top top',
-          endTrigger: '#benefits',
-          end: 'bottom center',
+          endTrigger: '#purchase',
+          end: 'top 30%',
           scrub: 0.8,
           invalidateOnRefresh: true,
         },
@@ -199,16 +222,52 @@ export default function TravelingProductStage() {
         }, 0.25);
 
       // =========================================================================
-      // 2. AT HAND SECTION -> SLOW GRADUAL FADE-OUT
-      //    Starts slowly fading out smoothly upon reaching the hand.
-      //    Remains hidden for all sections below the hand.
-      //    Smoothly fades back in on reverse scroll.
+      // 2. BENEFITS SECTION: RESTING STEADILY ON THE PALM
+      //    Product stays fully visible and resting on the palm throughout Benefits
+      // =========================================================================
+      masterTl.to(productEl, {
+        x: () => getRightHandX(),
+        y: () => getTargetOverHandY(),
+        scale: () => (window.innerWidth < 768 ? 0.42 : 0.46),
+        rotation: -1.0,
+        opacity: 1,
+        ease: 'none',
+        duration: 0.9,
+      }, 1.0);
+
+      // =========================================================================
+      // 3. ENTERING INGREDIENTS SECTION: SMOOTH GRADUAL FADE-OUT
+      //    As soon as scroll enters Ingredients, smoothly fades product out completely
       // =========================================================================
       masterTl.to(productEl, {
         opacity: 0,
         ease: 'power1.inOut',
-        duration: 0.8,
-      }, 1.0);
+        duration: 0.4,
+      }, 1.9);
+
+      // =========================================================================
+      // 4. THROUGHOUT ENTIRE INGREDIENTS SECTION: COMPLETELY HIDDEN
+      //    Product remains 100% hidden (opacity: 0) while moving to Purchase pos
+      // =========================================================================
+      masterTl.to(productEl, {
+        x: () => getLeftX(),
+        y: () => getPurchaseY(),
+        scale: () => (window.innerWidth < 768 ? 0.78 : 0.88),
+        rotation: 0,
+        opacity: 0,
+        ease: 'power1.inOut',
+        duration: 1.5,
+      }, 2.3);
+
+      // =========================================================================
+      // 5. ENTERING PURCHASE SECTION: SMOOTH FADE-IN AT PURCHASE BOX
+      //    Smoothly appears into the purchase stage; fades out on reverse scroll
+      // =========================================================================
+      masterTl.to(productEl, {
+        opacity: 1,
+        ease: 'power1.inOut',
+        duration: 0.4,
+      }, 3.8);
 
     });
 
