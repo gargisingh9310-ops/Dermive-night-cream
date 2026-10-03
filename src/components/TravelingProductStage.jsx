@@ -183,23 +183,20 @@ export default function TravelingProductStage() {
         });
       }
 
-      // MASTER TIMELINE: Hero -> Benefits (Hand) -> Hidden in Ingredients -> Purchase
-      const masterTl = gsap.timeline({
+      // 1. TIMELINE: Hero -> Benefits (Hand Palm) -> Smooth Fade-out before Ingredients
+      const heroBenefitsTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#hero',
           start: 'top top',
-          endTrigger: '#purchase',
-          end: 'top 30%',
+          endTrigger: '#benefits',
+          end: 'bottom bottom',
           scrub: 0.8,
           invalidateOnRefresh: true,
         },
       });
 
-      // =========================================================================
-      // 1. HERO -> BENEFITS SECTION (Center -> Right Hand Palm)
-      //    Maintains exact movement, position, timing & animations before hand
-      // =========================================================================
-      masterTl
+      // Hero -> Hand Palm
+      heroBenefitsTl
         .to(productEl, {
           x: () => getRightHandX(),
           y: () => getTargetOverHandY(),
@@ -219,55 +216,75 @@ export default function TravelingProductStage() {
           opacity: 1,
           ease: 'power1.inOut',
           duration: 0.45,
-        }, 0.25);
+        }, 0.25)
 
-      // =========================================================================
-      // 2. BENEFITS SECTION: RESTING STEADILY ON THE PALM
-      //    Product stays fully visible and resting on the palm throughout Benefits
-      // =========================================================================
-      masterTl.to(productEl, {
-        x: () => getRightHandX(),
-        y: () => getTargetOverHandY(),
-        scale: () => (window.innerWidth < 768 ? 0.42 : 0.46),
-        rotation: -1.0,
-        opacity: 1,
-        ease: 'none',
-        duration: 0.9,
-      }, 1.0);
+        // Benefits Section: Resting steadily on the palm (fully visible)
+        .to(productEl, {
+          x: () => getRightHandX(),
+          y: () => getTargetOverHandY(),
+          scale: () => (window.innerWidth < 768 ? 0.42 : 0.46),
+          rotation: -1.0,
+          opacity: 1,
+          ease: 'none',
+          duration: 0.8,
+        }, 1.0)
 
-      // =========================================================================
-      // 3. ENTERING INGREDIENTS SECTION: SMOOTH GRADUAL FADE-OUT
-      //    As soon as scroll enters Ingredients, smoothly fades product out completely
-      // =========================================================================
-      masterTl.to(productEl, {
-        opacity: 0,
-        ease: 'power1.inOut',
-        duration: 0.4,
-      }, 1.9);
+        // Smooth fade-out as Benefits ends and scroll enters Ingredients
+        .to(productEl, {
+          opacity: 0,
+          ease: 'power1.inOut',
+          duration: 0.4,
+        }, 1.8);
 
-      // =========================================================================
-      // 4. THROUGHOUT ENTIRE INGREDIENTS SECTION: COMPLETELY HIDDEN
-      //    Product remains 100% hidden (opacity: 0) while moving to Purchase pos
-      // =========================================================================
-      masterTl.to(productEl, {
-        x: () => getLeftX(),
-        y: () => getPurchaseY(),
-        scale: () => (window.innerWidth < 768 ? 0.78 : 0.88),
-        rotation: 0,
-        opacity: 0,
-        ease: 'power1.inOut',
-        duration: 1.5,
-      }, 2.3);
+      // 2. SCROLLTRIGGER: Explicitly guarantee product is completely hidden across ENTIRE Ingredients section
+      ScrollTrigger.create({
+        trigger: '#ingredients',
+        start: 'top 95%',
+        end: 'bottom 5%',
+        onEnter: () => {
+          gsap.set(productEl, { opacity: 0, visibility: 'hidden' });
+        },
+        onLeave: () => {
+          gsap.set(productEl, { visibility: 'visible' });
+        },
+        onEnterBack: () => {
+          gsap.set(productEl, { opacity: 0, visibility: 'hidden' });
+        },
+        onLeaveBack: () => {
+          gsap.set(productEl, { visibility: 'visible' });
+        },
+      });
 
-      // =========================================================================
-      // 5. ENTERING PURCHASE SECTION: SMOOTH FADE-IN AT PURCHASE BOX
-      //    Smoothly appears into the purchase stage; fades out on reverse scroll
-      // =========================================================================
-      masterTl.to(productEl, {
-        opacity: 1,
-        ease: 'power1.inOut',
-        duration: 0.4,
-      }, 3.8);
+      // 3. TIMELINE: Purchase Section (entering Purchase from Ingredients)
+      const purchaseTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: '#purchase',
+          start: 'top 85%',
+          end: 'top 30%',
+          scrub: 0.8,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      purchaseTl.fromTo(
+        productEl,
+        {
+          x: () => getLeftX(),
+          y: () => getPurchaseY(),
+          scale: () => (window.innerWidth < 768 ? 0.78 : 0.88),
+          rotation: 0,
+          opacity: 0,
+        },
+        {
+          x: () => getLeftX(),
+          y: () => getPurchaseY(),
+          scale: () => (window.innerWidth < 768 ? 0.78 : 0.88),
+          rotation: 0,
+          opacity: 1,
+          ease: 'power1.inOut',
+          duration: 1.0,
+        }
+      );
 
     });
 
