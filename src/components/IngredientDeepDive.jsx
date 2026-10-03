@@ -145,7 +145,6 @@ export default function IngredientDeepDive() {
                 src="/fullboxinfo.png"
                 alt="DERMIVA Niacinamide Formulation & Box Architecture"
                 className="w-full h-full object-contain filter drop-shadow-[0_12px_28px_rgba(49,72,58,0.12)] select-none"
-                style={{ opacity: 0 }}
               />
             </div>
           </div>

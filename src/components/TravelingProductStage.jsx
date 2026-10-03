@@ -97,10 +97,9 @@ export default function TravelingProductStage() {
     };
   }, [animPhase]);
 
-  // 2. MASTER SCROLL TIMELINE: Continuous Journey (Hero -> Benefits Hand [Palm] -> Ingredients Container -> Final Left Purchase)
+  // 2. MASTER SCROLL TIMELINE: Continuous Journey (Hero -> Benefits Hand [Palm] -> Smooth Gradual Fade-out)
   useEffect(() => {
     const productEl = productContainerRef.current;
-    const sparkleBurstEl = sparkleBurstRef.current;
     const boxCapEl = boxCapLayerRef.current;
     const fullboxEl = fullboxLayerRef.current;
     const orbitBackEl = orbitBackContainerRef.current;
@@ -122,55 +121,6 @@ export default function TravelingProductStage() {
         return vw < 768 ? -vh * 0.02 : -vh * 0.035;
       };
 
-      // Coordinates for Right Rounded Container in #ingredients (Niacinamide section)
-      const getIngredientsRightX = () => {
-        const container = document.getElementById('niacinamide-visual-container');
-        if (container) {
-          const rect = container.getBoundingClientRect();
-          const centerX = rect.left + rect.width / 2;
-          return centerX - window.innerWidth / 2;
-        }
-        const vw = window.innerWidth;
-        if (vw < 768) return 0;
-        if (vw < 1024) return vw * 0.22;
-        return Math.min(vw * 0.24, 345);
-      };
-
-      const getIngredientsY = () => {
-        const container = document.getElementById('niacinamide-visual-container');
-        if (container) {
-          const rect = container.getBoundingClientRect();
-          const centerY = rect.top + rect.height / 2;
-          return centerY - window.innerHeight / 2;
-        }
-        const vh = window.innerHeight;
-        const vw = window.innerWidth;
-        return vw < 768 ? vh * 0.05 : 0;
-      };
-
-      const getLeftX = () => {
-        const boxEl = document.getElementById('purchase-product-box');
-        if (boxEl) {
-          const rect = boxEl.getBoundingClientRect();
-          const boxCenterX = rect.left + rect.width / 2;
-          return boxCenterX - window.innerWidth / 2;
-        }
-        const vw = window.innerWidth;
-        if (vw < 1024) return 0;
-        return -Math.min(vw * 0.25, 340);
-      };
-
-      const getPurchaseY = () => {
-        const boxEl = document.getElementById('purchase-product-box');
-        if (boxEl) {
-          const rect = boxEl.getBoundingClientRect();
-          const boxCenterY = rect.top + rect.height / 2;
-          return boxCenterY - window.innerHeight / 2;
-        }
-        const vw = window.innerWidth;
-        return vw < 768 ? -20 : 0;
-      };
-
       // Set initial centered state
       gsap.set(productEl, {
         xPercent: -50,
@@ -182,16 +132,6 @@ export default function TravelingProductStage() {
         opacity: 1,
         force3D: true,
       });
-
-      gsap.set('#niacinamide-fullboxinfo', { opacity: 0 });
-
-      if (sparkleBurstEl) {
-        gsap.set(sparkleBurstEl, {
-          opacity: 0,
-          scale: 0.72,
-          force3D: true,
-        });
-      }
 
       gsap.set(boxCapEl, { opacity: 1, force3D: true });
       gsap.set(fullboxEl, { opacity: 0, force3D: true });
@@ -220,124 +160,21 @@ export default function TravelingProductStage() {
         });
       }
 
-      // Active Scroll Lock & Pause Controller (2.0 seconds permanent pause)
-      let isScrollLocked = false;
-      let pauseTimeout = null;
-
-      const pauseScrollForDuration = (durationMs = 2000) => {
-        if (isScrollLocked) return;
-        isScrollLocked = true;
-
-        const preventScroll = (e) => {
-          if (isScrollLocked) {
-            if (e.cancelable) e.preventDefault();
-            e.stopPropagation();
-            return false;
-          }
-        };
-
-        window.addEventListener('wheel', preventScroll, { passive: false });
-        window.addEventListener('touchmove', preventScroll, { passive: false });
-        window.addEventListener('keydown', (e) => {
-          if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Space', ' '].includes(e.key)) {
-            if (e.cancelable) e.preventDefault();
-          }
-        }, { passive: false });
-
-        if (pauseTimeout) clearTimeout(pauseTimeout);
-        pauseTimeout = setTimeout(() => {
-          isScrollLocked = false;
-          window.removeEventListener('wheel', preventScroll);
-          window.removeEventListener('touchmove', preventScroll);
-        }, durationMs);
-      };
-
-      // 2s Hand Sparkle (Warm Soft-White & Champagne particles on palm)
-      const playHandSparkle = () => {
-        if (!sparkleBurstEl) return;
-        gsap.killTweensOf(sparkleBurstEl);
-        gsap.fromTo(
-          sparkleBurstEl,
-          { opacity: 0, scale: 0.7, rotation: -6 },
-          {
-            opacity: 1,
-            scale: 1.05,
-            rotation: 3,
-            duration: 0.5,
-            ease: 'power2.out',
-            onComplete: () => {
-              gsap.to(sparkleBurstEl, {
-                opacity: 0,
-                scale: 1.25,
-                rotation: 8,
-                duration: 1.5,
-                ease: 'power2.inOut',
-              });
-            },
-          }
-        );
-      };
-
-      let hasHandPaused = false;
-
-      // Direct docking trigger for purchase section (handles fast-scrolling/anchor links)
-      ScrollTrigger.create({
-        trigger: '#purchase',
-        start: 'top 30%',
-        onEnter: () => {
-          const dockedEl = document.getElementById('purchase-docked-product');
-          if (dockedEl) dockedEl.style.opacity = '1';
-          gsap.set(productEl, { opacity: 0 });
-        },
-        onLeaveBack: () => {
-          const dockedEl = document.getElementById('purchase-docked-product');
-          if (dockedEl) dockedEl.style.opacity = '0';
-        },
-      });
-
-      // MASTER TIMELINE: Hero -> Benefits -> Ingredients (Niacinamide) -> Purchase White Container
+      // MASTER TIMELINE: Hero -> Hand section -> Smooth Gradual Fade-out
       const masterTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#hero',
           start: 'top top',
-          endTrigger: '#purchase',
-          end: 'top 30%',
+          endTrigger: '#benefits',
+          end: 'bottom center',
           scrub: 0.8,
           invalidateOnRefresh: true,
-          onUpdate: (self) => {
-            const p = self.progress;
-            const dir = self.direction; // 1 = down, -1 = up
-
-            // ONLY SCROLL PAUSE ON ENTIRE SITE: HAND PALM LANDING (t = 1.0, p >= 0.208)
-            // Triggers ONLY when product has completely reached the palm
-            if (dir > 0 && p >= 0.208 && p < 0.35 && !hasHandPaused) {
-              hasHandPaused = true;
-              playHandSparkle();
-              pauseScrollForDuration(2000);
-            }
-
-            // Reset hand pause flag when scrolling back up to Hero
-            if (dir < 0) {
-              if (p < 0.16) hasHandPaused = false;
-            }
-
-            // Docking into purchase white container (continuous scrolling)
-            const dockedEl = document.getElementById('purchase-docked-product');
-            if (dockedEl) {
-              if (p >= 0.97) {
-                dockedEl.style.opacity = '1';
-                gsap.set(productEl, { opacity: 0 });
-              } else {
-                dockedEl.style.opacity = '0';
-              }
-            }
-          },
         },
       });
 
       // =========================================================================
       // 1. HERO -> BENEFITS SECTION (Center -> Right Hand Palm)
-      //    Small & natural scale (0.46) resting on the palm
+      //    Maintains exact movement, position, timing & animations before hand
       // =========================================================================
       masterTl
         .to(productEl, {
@@ -349,7 +186,7 @@ export default function TravelingProductStage() {
           duration: 1.0,
         }, 0)
 
-        // Crossfade to fullbox
+        // Crossfade separate box + cap to assembled fullbox
         .to(boxCapEl, {
           opacity: 0,
           ease: 'power1.inOut',
@@ -362,77 +199,16 @@ export default function TravelingProductStage() {
         }, 0.25);
 
       // =========================================================================
-      // 2. BENEFITS SECTION: LOCKED / RESTING STEADILY ON THE PALM
+      // 2. AT HAND SECTION -> SLOW GRADUAL FADE-OUT
+      //    Starts slowly fading out smoothly upon reaching the hand.
+      //    Remains hidden for all sections below the hand.
+      //    Smoothly fades back in on reverse scroll.
       // =========================================================================
       masterTl.to(productEl, {
-        x: () => getRightHandX(),
-        y: () => getTargetOverHandY(),
-        scale: () => (window.innerWidth < 768 ? 0.42 : 0.46),
-        rotation: -1.0,
-        ease: 'none',
+        opacity: 0,
+        ease: 'power1.inOut',
         duration: 0.8,
       }, 1.0);
-
-      // =========================================================================
-      // 3. BENEFITS -> INGREDIENTS SECTION (Moves into Niacinamide Right Container)
-      //    Traveling product smoothly fades out; fullboxinfo fades in
-      // =========================================================================
-      masterTl
-        .to(productEl, {
-          x: () => getIngredientsRightX(),
-          y: () => getIngredientsY(),
-          scale: () => (window.innerWidth < 768 ? 0.52 : 0.62),
-          rotation: 0,
-          ease: 'power1.inOut',
-          duration: 1.0,
-        }, 1.8)
-        .to(productEl, {
-          opacity: 0,
-          ease: 'power1.inOut',
-          duration: 0.4,
-        }, 2.4)
-        .to('#niacinamide-fullboxinfo', {
-          opacity: 1,
-          ease: 'power1.inOut',
-          duration: 0.4,
-        }, 2.4);
-
-      // =========================================================================
-      // 4. INGREDIENTS SECTION: SETTLED IN NIACINAMIDE RIGHT CONTAINER
-      //    fullboxinfo is displayed; traveling product is hidden
-      // =========================================================================
-      masterTl.to(productEl, {
-        x: () => getIngredientsRightX(),
-        y: () => getIngredientsY(),
-        scale: () => (window.innerWidth < 768 ? 0.52 : 0.62),
-        rotation: 0,
-        ease: 'none',
-        duration: 0.8,
-      }, 2.8);
-
-      // =========================================================================
-      // 5. INGREDIENTS -> FINAL LEFT POSITION IN PURCHASE SECTION
-      //    fullboxinfo fades out; traveling product fades back in smoothly
-      // =========================================================================
-      masterTl
-        .to('#niacinamide-fullboxinfo', {
-          opacity: 0,
-          ease: 'power1.inOut',
-          duration: 0.35,
-        }, 3.6)
-        .to(productEl, {
-          opacity: 1,
-          ease: 'power1.inOut',
-          duration: 0.35,
-        }, 3.6)
-        .to(productEl, {
-          x: () => getLeftX(),
-          y: () => getPurchaseY(),
-          scale: () => (window.innerWidth < 768 ? 0.78 : 0.88),
-          rotation: 0,
-          ease: 'power1.inOut',
-          duration: 1.2,
-        }, 3.6);
 
     });
 

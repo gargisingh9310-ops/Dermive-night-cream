@@ -50,11 +50,10 @@ export default function ProductPurchase({ onAddToCart }) {
                 <span>CLINICALLY TESTED</span>
               </div>
 
-              {/* Absolute Centered Product Image in White Box (Smoothly takes over upon arrival) */}
+              {/* Product Image in White Box */}
               <div
                 id="purchase-docked-product"
                 className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 select-none"
-                style={{ opacity: 0 }}
               >
                 <div className="w-[325px] sm:w-[400px] lg:w-[465px] flex items-center justify-center">
                   <img
