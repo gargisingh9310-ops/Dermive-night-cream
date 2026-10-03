@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-ivory: #F7F3E8;
+    --bg-sage: #E8EBDD;
+    --brand-green: #31483A;
+    --brand-sage: #879B7A;
+    --champagne-gold: #C9A96A;
+    --text-dark: #27352D;
+    --text-muted: #69736A;
+    --border-sage: #C9D2C2;
+    --border-light: #DDE2D8;
+  }
+
+  body {
+    background-color: #F7F3E8;
+    color: #27352D;
+    font-family: 'Plus Jakarta Sans', Inter, sans-serif;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, .font-serif {
+    font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+  }
+}
+
+/* Botanical Subtle Organic Hero Background Gradient */
+.bg-hero-botanical {
+  background: radial-gradient(circle at 50% 45%, #FFFFFF 0%, #F7F3E8 55%, #E8EBDD 100%);
+}
+
+.bg-sage-soft {
+  background-color: #E8EBDD;
+}
+
+.bg-ivory-soft {
+  background-color: #F7F3E8;
+}
+
+/* Soft Botanical Product Shadow & Aura */
+.product-soft-shadow {
+  filter: drop-shadow(0 15px 35px rgba(49, 72, 58, 0.09));
+}
+
+.product-ambient-aura {
+  background: radial-gradient(circle at center, rgba(135, 155, 122, 0.16) 0%, rgba(49, 72, 58, 0.04) 55%, transparent 75%);
+}
+
+/* Botanical Glass Cards */
+.glass-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid #C9D2C2;
+  box-shadow: 0 4px 20px rgba(49, 72, 58, 0.04);
+}
+
+.glass-card-hover {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card-hover:hover {
+  background: #FFFFFF;
+  border-color: #879B7A;
+  box-shadow: 0 12px 30px rgba(49, 72, 58, 0.09);
+  transform: translateY(-3px);
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: #31483A;
+  color: #FFFFFF;
+  border-radius: 0.75rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-primary:hover {
+  background-color: #24372B;
+  box-shadow: 0 6px 20px rgba(49, 72, 58, 0.22);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: #31483A;
+  border: 1px solid #879B7A;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #E8EBDD;
+}
+
+.btn-champagne-shimmer {
+  background: linear-gradient(90deg, #31483A 0%, #3D5948 50%, #31483A 100%);
+  background-size: 200% 100%;
+  color: #FFFFFF;
+  transition: all 0.4s ease;
+}
+
+.btn-champagne-shimmer:hover {
+  background-position: 100% 0;
+  box-shadow: 0 6px 22px rgba(49, 72, 58, 0.25);
+}
+
+/* Subtle Film Grain */
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F7F3E8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C9D2C2;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #879B7A;
+}
+
+/* Orbit Pulsing & Rings */
+.orbit-ring {
+  border: 1px solid rgba(135, 155, 122, 0.3);
+  box-shadow: 0 0 12px rgba(201, 169, 106, 0.12);
+}
