@@ -189,8 +189,8 @@ export default function TravelingProductStage() {
           trigger: '#hero',
           start: 'top top',
           endTrigger: '#benefits',
-          end: 'bottom bottom',
-          scrub: 0.8,
+          end: 'bottom 60%', // Fade-out completes early before #ingredients heading enters
+          scrub: 0.6,
           invalidateOnRefresh: true,
         },
       });
@@ -226,21 +226,21 @@ export default function TravelingProductStage() {
           rotation: -1.0,
           opacity: 1,
           ease: 'none',
-          duration: 0.8,
+          duration: 0.6,
         }, 1.0)
 
-        // Smooth fade-out as Benefits ends and scroll enters Ingredients
+        // Smooth fade-out before Ingredients heading reaches view
         .to(productEl, {
           opacity: 0,
           ease: 'power1.inOut',
           duration: 0.4,
-        }, 1.8);
+        }, 1.6);
 
       // 2. SCROLLTRIGGER: Explicitly guarantee product is completely hidden across ENTIRE Ingredients section
       ScrollTrigger.create({
         trigger: '#ingredients',
-        start: 'top 95%',
-        end: 'bottom 5%',
+        start: 'top bottom',
+        end: 'bottom top',
         onEnter: () => {
           gsap.set(productEl, { opacity: 0, visibility: 'hidden' });
         },
