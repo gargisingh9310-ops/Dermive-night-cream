@@ -1,9 +1,130 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Leaf, Droplets, Check, X, ShieldAlert } from 'lucide-react';
 import { PRODUCT } from '../data/productData';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export default function IngredientDeepDive() {
   const [activeTab, setActiveTab] = useState('niacinamide');
+  const headerRef = useRef(null);
+  const tabsRef = useRef(null);
+  const showcaseCardRef = useRef(null);
+  const cardRefs = useRef([]);
+  const glitterRefs = useRef([]);
+  const comparisonContainerRef = useRef(null);
+
+  useEffect(() => {
+    const cards = cardRefs.current.filter(Boolean);
+    const glitters = glitterRefs.current.filter(Boolean);
+
+    const ctx = gsap.context(() => {
+      // 1. Top Section Entrance (Header, Tabs, Showcase Card)
+      if (headerRef.current) {
+        gsap.set(headerRef.current, { y: 25, opacity: 0, force3D: true });
+      }
+      if (tabsRef.current) {
+        gsap.set(tabsRef.current, { y: 20, opacity: 0, force3D: true });
+      }
+      if (showcaseCardRef.current) {
+        gsap.set(showcaseCardRef.current, { y: 30, opacity: 0, scale: 0.98, force3D: true });
+      }
+
+      const sectionTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: '#ingredients',
+          start: 'top 75%',
+          end: 'bottom 20%',
+          toggleActions: 'play reverse play reverse',
+        },
+      });
+
+      if (headerRef.current) {
+        sectionTl.to(headerRef.current, {
+          y: 0,
+          opacity: 1,
+          duration: 0.7,
+          ease: 'power3.out',
+        }, 0);
+      }
+
+      if (tabsRef.current) {
+        sectionTl.to(tabsRef.current, {
+          y: 0,
+          opacity: 1,
+          duration: 0.6,
+          ease: 'power3.out',
+        }, 0.15);
+      }
+
+      if (showcaseCardRef.current) {
+        sectionTl.to(showcaseCardRef.current, {
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          duration: 0.8,
+          ease: 'power3.out',
+        }, 0.25);
+      }
+
+      // 2. Comparison Cards Section
+      if (cards.length) {
+        gsap.set(cards, {
+          y: 30,
+          opacity: 0,
+          force3D: true,
+        });
+
+        gsap.set(glitters, {
+          opacity: 0,
+          force3D: true,
+        });
+
+        const compTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: comparisonContainerRef.current || '#ingredients-comparison-container',
+            start: 'top 80%',
+            end: 'bottom 20%',
+            toggleActions: 'play reverse play reverse',
+          },
+        });
+
+        cards.forEach((card, idx) => {
+          const glitter = glitters[idx];
+          const cardStartTime = idx * 0.18;
+          const cardDuration = 0.8;
+
+          compTl.to(
+            card,
+            {
+              y: 0,
+              opacity: 1,
+              duration: cardDuration,
+              ease: 'power3.out',
+            },
+            cardStartTime
+          );
+
+          if (glitter) {
+            compTl.to(
+              glitter,
+              {
+                opacity: 1,
+                duration: 0.5,
+                ease: 'power2.out',
+              },
+              cardStartTime + 0.45
+            );
+          }
+        });
+      }
+    });
+
+    return () => ctx.revert();
+  }, []);
 
   const ingredients = [
     {
@@ -60,7 +181,7 @@ export default function IngredientDeepDive() {
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div ref={headerRef} className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 mb-3">
             <span className="w-5 h-[1.5px] bg-[#31483A]" />
             <span className="text-[11px] font-mono tracking-[0.28em] text-[#879B7A] uppercase font-semibold">
@@ -79,7 +200,7 @@ export default function IngredientDeepDive() {
         </div>
 
         {/* Interactive Tab Selector */}
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-12">
+        <div ref={tabsRef} className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-12">
           {ingredients.map((item) => (
             <button
               key={item.id}
@@ -96,7 +217,7 @@ export default function IngredientDeepDive() {
         </div>
 
         {/* Active Ingredient Detailed Showcase Card */}
-        <div className="p-8 sm:p-12 rounded-3xl mb-16 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center bg-white border border-[#C9D2C2] shadow-[0_4px_24px_rgba(49,72,58,0.04)]">
+        <div ref={showcaseCardRef} className="p-8 sm:p-12 rounded-3xl mb-16 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center bg-white border border-[#C9D2C2] shadow-[0_4px_24px_rgba(49,72,58,0.04)] will-change-transform">
           
           <div className="lg:col-span-7">
             <div className="inline-block px-3 py-1 rounded-md bg-[#E8EBDD] border border-[#C9D2C2] text-[#31483A] text-[10px] font-mono tracking-widest uppercase mb-3 font-semibold">
@@ -134,25 +255,34 @@ export default function IngredientDeepDive() {
             </div>
           </div>
 
-          {/* Right Column: Existing Light Rounded Visual Container for Traveling Product */}
+          {/* Right Column: 360° Product Video Visual Container */}
           <div className="lg:col-span-5 flex items-center justify-center">
             <div
               id="niacinamide-visual-container"
-              className="relative w-full max-w-sm aspect-square rounded-2xl overflow-hidden border border-[#C9D2C2] p-6 sm:p-8 flex items-center justify-center bg-gradient-to-b from-[#E8EBDD] to-[#F7F3E8] shadow-sm pointer-events-none"
+              className="relative w-full max-w-sm aspect-square rounded-2xl border border-[#C9D2C2] flex items-center justify-center bg-gradient-to-b from-[#E8EBDD] to-[#F7F3E8] shadow-sm overflow-hidden"
             >
-              <img
-                id="niacinamide-fullboxinfo"
-                src="/fullboxinfo.png"
-                alt="DERMIVA Niacinamide Formulation & Box Architecture"
-                className="w-full h-full object-contain filter drop-shadow-[0_12px_28px_rgba(49,72,58,0.12)] select-none"
-              />
+              {/* Inner wrapper: zooms and crops 16:9 video so the jar occupies ~70-75% of the square container */}
+              <div className="relative w-full h-full flex items-center justify-center overflow-hidden pointer-events-none">
+                <video
+                  src="/360view.mp4"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-[260%] max-w-none h-auto object-contain select-none pointer-events-none -translate-y-[4.5%]"
+                />
+              </div>
             </div>
           </div>
 
         </div>
 
         {/* Clean Standard Comparison Table */}
-        <div className="p-8 sm:p-10 rounded-3xl bg-white border border-[#C9D2C2] shadow-[0_4px_24px_rgba(49,72,58,0.04)]">
+        <div
+          ref={comparisonContainerRef}
+          id="ingredients-comparison-container"
+          className="p-8 sm:p-10 rounded-3xl bg-white border border-[#C9D2C2] shadow-[0_4px_24px_rgba(49,72,58,0.04)]"
+        >
           <div className="text-center mb-8">
             <span className="text-[10px] font-mono tracking-widest text-[#879B7A] uppercase block mb-1 font-semibold">
               FORMULATION INTEGRITY
@@ -165,61 +295,191 @@ export default function IngredientDeepDive() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             
             {/* DERMIVA Column */}
-            <div className="p-6 rounded-2xl bg-[#E8EBDD]/40 border border-[#879B7A] shadow-sm">
-              <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#C9D2C2]">
-                <span className="font-serif text-lg text-[#31483A] font-semibold">
-                  DERMIVA Repair & Restore
-                </span>
-                <span className="text-[10px] font-mono text-white bg-[#31483A] px-2.5 py-0.5 rounded-full font-bold">
-                  GOLD STANDARD
-                </span>
+            <div
+              ref={(el) => (cardRefs.current[0] = el)}
+              className="relative p-6 rounded-2xl bg-[#E8EBDD]/40 border border-[#879B7A] shadow-sm overflow-hidden group will-change-transform"
+            >
+              {/* Traveling Border Glitter Highlight */}
+              <div
+                ref={(el) => (glitterRefs.current[0] = el)}
+                className="absolute inset-0 pointer-events-none rounded-2xl z-10 overflow-visible"
+              >
+                <svg className="w-full h-full overflow-visible pointer-events-none rounded-2xl" style={{ display: 'block' }}>
+                  <defs>
+                    <linearGradient id="champagne-glitter-dermiva" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#DFCCA1" stopOpacity="0.2" />
+                      <stop offset="50%" stopColor="#FFF9EB" stopOpacity="1" />
+                      <stop offset="100%" stopColor="#C9A96A" stopOpacity="0.35" />
+                    </linearGradient>
+                    <filter id="glitter-glow-dermiva" x="-30%" y="-30%" width="160%" height="160%">
+                      <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="glow" />
+                      <feMerge>
+                        <feMergeNode in="glow" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
+
+                  {/* Soft Glow Path */}
+                  <rect
+                    x="0.75"
+                    y="0.75"
+                    width="calc(100% - 1.5px)"
+                    height="calc(100% - 1.5px)"
+                    rx="16"
+                    ry="16"
+                    fill="none"
+                    stroke="url(#champagne-glitter-dermiva)"
+                    strokeWidth="2"
+                    strokeDasharray="14 86"
+                    pathLength="100"
+                    strokeLinecap="round"
+                    filter="url(#glitter-glow-dermiva)"
+                    className="card-glitter-path"
+                    style={{ animationDuration: '4.8s', animationDelay: '0s' }}
+                  />
+
+                  {/* Crisp Sparkle Glint */}
+                  <rect
+                    x="0.75"
+                    y="0.75"
+                    width="calc(100% - 1.5px)"
+                    height="calc(100% - 1.5px)"
+                    rx="16"
+                    ry="16"
+                    fill="none"
+                    stroke="#FFFDF7"
+                    strokeWidth="1.2"
+                    strokeDasharray="8 92"
+                    pathLength="100"
+                    strokeLinecap="round"
+                    className="card-glitter-path"
+                    style={{ animationDuration: '4.8s', animationDelay: '0s' }}
+                  />
+                </svg>
               </div>
-              <div className="space-y-3 text-xs text-[#27352D] font-light">
-                <div className="flex items-center gap-2.5">
-                  <Check size={14} className="text-[#31483A]" />
-                  <span>0% Parabens, Sulphates, Silicones, Mineral Oil</span>
+
+              <div className="relative z-10">
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#C9D2C2]">
+                  <span className="font-serif text-lg text-[#31483A] font-semibold">
+                    DERMIVA Repair & Restore
+                  </span>
+                  <span className="text-[10px] font-mono text-white bg-[#31483A] px-2.5 py-0.5 rounded-full font-bold">
+                    GOLD STANDARD
+                  </span>
                 </div>
-                <div className="flex items-center gap-2.5">
-                  <Check size={14} className="text-[#31483A]" />
-                  <span>Bio-active Mediterranean Olive Leaf Polyphenols</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <Check size={14} className="text-[#31483A]" />
-                  <span>Clinical Grade Niacinamide (Vitamin B3)</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <Check size={14} className="text-[#31483A]" />
-                  <span>Dermatologically tested for sensitive barrier support</span>
+                <div className="space-y-3 text-xs text-[#27352D] font-light">
+                  <div className="flex items-center gap-2.5">
+                    <Check size={14} className="text-[#31483A]" />
+                    <span>0% Parabens, Sulphates, Silicones, Mineral Oil</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <Check size={14} className="text-[#31483A]" />
+                    <span>Bio-active Mediterranean Olive Leaf Polyphenols</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <Check size={14} className="text-[#31483A]" />
+                    <span>Clinical Grade Niacinamide (Vitamin B3)</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <Check size={14} className="text-[#31483A]" />
+                    <span>Dermatologically tested for sensitive barrier support</span>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Ordinary Night Creams Column */}
-            <div className="p-6 rounded-2xl bg-[#F7F3E8]/70 border border-[#DDE2D8]">
-              <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#DDE2D8]">
-                <span className="font-serif text-lg text-[#69736A] font-normal">
-                  Standard Night Creams
-                </span>
-                <span className="text-[10px] font-mono text-[#69736A] bg-white border border-[#C9D2C2] px-2 py-0.5 rounded-full font-medium">
-                  CONVENTIONAL
-                </span>
+            <div
+              ref={(el) => (cardRefs.current[1] = el)}
+              className="relative p-6 rounded-2xl bg-[#F7F3E8]/70 border border-[#DDE2D8] shadow-sm overflow-hidden group will-change-transform"
+            >
+              {/* Traveling Border Glitter Highlight */}
+              <div
+                ref={(el) => (glitterRefs.current[1] = el)}
+                className="absolute inset-0 pointer-events-none rounded-2xl z-10 overflow-visible"
+              >
+                <svg className="w-full h-full overflow-visible pointer-events-none rounded-2xl" style={{ display: 'block' }}>
+                  <defs>
+                    <linearGradient id="champagne-glitter-standard" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#C9D2C2" stopOpacity="0.2" />
+                      <stop offset="50%" stopColor="#FFFFFF" stopOpacity="0.9" />
+                      <stop offset="100%" stopColor="#DFCCA1" stopOpacity="0.3" />
+                    </linearGradient>
+                    <filter id="glitter-glow-standard" x="-30%" y="-30%" width="160%" height="160%">
+                      <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="glow" />
+                      <feMerge>
+                        <feMergeNode in="glow" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
+
+                  {/* Soft Glow Path */}
+                  <rect
+                    x="0.75"
+                    y="0.75"
+                    width="calc(100% - 1.5px)"
+                    height="calc(100% - 1.5px)"
+                    rx="16"
+                    ry="16"
+                    fill="none"
+                    stroke="url(#champagne-glitter-standard)"
+                    strokeWidth="1.8"
+                    strokeDasharray="14 86"
+                    pathLength="100"
+                    strokeLinecap="round"
+                    filter="url(#glitter-glow-standard)"
+                    className="card-glitter-path"
+                    style={{ animationDuration: '5.6s', animationDelay: '-1.8s' }}
+                  />
+
+                  {/* Crisp Sparkle Glint */}
+                  <rect
+                    x="0.75"
+                    y="0.75"
+                    width="calc(100% - 1.5px)"
+                    height="calc(100% - 1.5px)"
+                    rx="16"
+                    ry="16"
+                    fill="none"
+                    stroke="#FFFFFF"
+                    strokeWidth="1.1"
+                    strokeDasharray="7 93"
+                    pathLength="100"
+                    strokeLinecap="round"
+                    className="card-glitter-path"
+                    style={{ animationDuration: '5.6s', animationDelay: '-1.8s' }}
+                  />
+                </svg>
               </div>
-              <div className="space-y-3 text-xs text-[#69736A] font-light">
-                <div className="flex items-center gap-2.5">
-                  <X size={14} className="text-red-500/80" />
-                  <span>Heavy pore-clogging mineral oils & silicones</span>
+
+              <div className="relative z-10">
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#DDE2D8]">
+                  <span className="font-serif text-lg text-[#69736A] font-normal">
+                    Standard Night Creams
+                  </span>
+                  <span className="text-[10px] font-mono text-[#69736A] bg-white border border-[#C9D2C2] px-2 py-0.5 rounded-full font-medium">
+                    CONVENTIONAL
+                  </span>
                 </div>
-                <div className="flex items-center gap-2.5">
-                  <X size={14} className="text-red-500/80" />
-                  <span>Synthetic chemical dyes and harsh parabens</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <X size={14} className="text-red-500/80" />
-                  <span>Low-grade diluted active concentrations</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <X size={14} className="text-red-500/80" />
-                  <span>Greasy residue that stains pillowcases</span>
+                <div className="space-y-3 text-xs text-[#69736A] font-light">
+                  <div className="flex items-center gap-2.5">
+                    <X size={14} className="text-red-500/80" />
+                    <span>Heavy pore-clogging mineral oils & silicones</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <X size={14} className="text-red-500/80" />
+                    <span>Synthetic chemical dyes and harsh parabens</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <X size={14} className="text-red-500/80" />
+                    <span>Low-grade diluted active concentrations</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <X size={14} className="text-red-500/80" />
+                    <span>Greasy residue that stains pillowcases</span>
+                  </div>
                 </div>
               </div>
             </div>

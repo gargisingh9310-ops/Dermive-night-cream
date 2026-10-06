@@ -50,28 +50,46 @@ export default function TravelingProductStage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 1. LUXURY ENTRANCE TIMELINE
+  // 1. LUXURY ENTRANCE TIMELINE (Phase 3: Starts ONLY after StrokeText watermark & short delay)
   useEffect(() => {
-    const tMount = setTimeout(() => {
+    let tCapLanded, tOrbitRise;
+    let hasStarted = false;
+
+    const startProductIntro = () => {
+      if (hasStarted) return;
+      hasStarted = true;
+
       setIsEntering(true);
       setAnimPhase('descending');
-    }, 60);
 
-    // 1.85s: Cap gently lands onto the box
-    const tCapLanded = setTimeout(() => {
-      setAnimPhase('cap-settled');
-    }, 1850);
+      // 1.22s: Cap gently lands onto the box (speed up by ~34%)
+      tCapLanded = setTimeout(() => {
+        setAnimPhase('cap-settled');
+      }, 1220);
 
-    // 2.7s: Orbit rises smoothly from below
-    const tOrbitRise = setTimeout(() => {
-      setOrbitEntering(true);
-      setAnimPhase('orbiting');
-    }, 2700);
+      // 1.78s: Orbit rises smoothly from below (speed up by ~34%)
+      tOrbitRise = setTimeout(() => {
+        setOrbitEntering(true);
+        setAnimPhase('orbiting');
+      }, 1780);
+    };
+
+    const handleIntroEvent = () => {
+      startProductIntro();
+    };
+
+    window.addEventListener('dermiva-hero-intro-start', handleIntroEvent, { once: true });
+
+    // Fallback timer: 1.55s (draw) + 0.08s (delay) + 0.38s (pause) = 2.01s ~ 2.0s
+    const fallbackTimer = setTimeout(() => {
+      startProductIntro();
+    }, 2000);
 
     return () => {
-      clearTimeout(tMount);
-      clearTimeout(tCapLanded);
-      clearTimeout(tOrbitRise);
+      window.removeEventListener('dermiva-hero-intro-start', handleIntroEvent);
+      clearTimeout(fallbackTimer);
+      if (tCapLanded) clearTimeout(tCapLanded);
+      if (tOrbitRise) clearTimeout(tOrbitRise);
     };
   }, []);
 
@@ -97,7 +115,7 @@ export default function TravelingProductStage() {
     };
   }, [animPhase]);
 
-  // 2. MASTER SCROLL TIMELINE: Continuous Journey (Hero -> Benefits Hand [Palm] -> Hidden in Ingredients -> Purchase)
+  // 2. MASTER SCROLL TIMELINE: Continuous Journey (Hero -> Benefits Hand Palm [Hard Clamped])
   useEffect(() => {
     const productEl = productContainerRef.current;
     const boxCapEl = boxCapLayerRef.current;
@@ -107,41 +125,63 @@ export default function TravelingProductStage() {
     if (!productEl || !boxCapEl || !fullboxEl) return;
 
     const ctx = gsap.context(() => {
-      // Dynamic responsive coordinates: Aligns directly with the palm of the Benefits Hand
+      // Dynamic responsive coordinates: Aligns precisely with the true center of the open palm
       const getRightHandX = () => {
         const vw = window.innerWidth;
-        if (vw < 768) return 0;
-        if (vw < 1024) return vw * 0.24;
-        return Math.min(vw * 0.25, 390);
+        const handEl = document.getElementById('benefits-hand-container') || document.getElementById('benefits-hand-img');
+        
+        let handWidth;
+        if (handEl && handEl.offsetWidth > 0) {
+          handWidth = handEl.offsetWidth;
+        } else {
+          if (vw < 640) handWidth = Math.min(360, vw * 0.52);
+          else if (vw < 768) handWidth = Math.min(460, vw * 0.52);
+          else if (vw < 1024) handWidth = Math.min(520, vw * 0.52);
+          else if (vw < 1280) handWidth = Math.min(580, vw * 0.52);
+          else handWidth = Math.min(640, vw * 0.52);
+        }
+
+        const rightOffset = vw >= 1280 ? 16 : 0;
+        // In the 500x500 hand image (/public/hand.png), the true center of the open palm is at x = 248 (49.6% from left)
+        // Hand left in viewport = vw - rightOffset - handWidth
+        // Palm X in viewport = (vw - rightOffset - handWidth) + (handWidth * 0.496) = vw - rightOffset - (handWidth * 0.504)
+        // Relative to center of viewport (vw / 2):
+        return (vw / 2) - rightOffset - (handWidth * 0.504);
       };
 
       const getTargetOverHandY = () => {
-        const vh = window.innerHeight;
         const vw = window.innerWidth;
-        return vw < 768 ? -vh * 0.02 : -vh * 0.035;
-      };
-
-      const getLeftX = () => {
-        const boxEl = document.getElementById('purchase-product-box');
-        if (boxEl) {
-          const rect = boxEl.getBoundingClientRect();
-          const boxCenterX = rect.left + rect.width / 2;
-          return boxCenterX - window.innerWidth / 2;
+        const handEl = document.getElementById('benefits-hand-container') || document.getElementById('benefits-hand-img');
+        
+        let handHeight;
+        if (handEl && handEl.offsetHeight > 0) {
+          handHeight = handEl.offsetHeight;
+        } else {
+          if (vw < 640) handHeight = Math.min(360, vw * 0.52);
+          else if (vw < 768) handHeight = Math.min(460, vw * 0.52);
+          else if (vw < 1024) handHeight = Math.min(520, vw * 0.52);
+          else if (vw < 1280) handHeight = Math.min(580, vw * 0.52);
+          else handHeight = Math.min(640, vw * 0.52);
         }
-        const vw = window.innerWidth;
-        if (vw < 1024) return 0;
-        return -Math.min(vw * 0.25, 340);
-      };
 
-      const getPurchaseY = () => {
-        const boxEl = document.getElementById('purchase-product-box');
-        if (boxEl) {
-          const rect = boxEl.getBoundingClientRect();
-          const boxCenterY = rect.top + rect.height / 2;
-          return boxCenterY - window.innerHeight / 2;
-        }
-        const vw = window.innerWidth;
-        return vw < 768 ? -20 : 0;
+        // In Benefits.jsx, hand container is at: top: 50%, -translate-y-[45%]
+        // Palm contact point in hand.png (500x500) where the jar base rests is at y = 295 (59.0% from top of hand image)
+        // Hand container top in viewport = (vh / 2) - (0.45 * handHeight)
+        // Palm contact Y in viewport = (vh / 2) - (0.45 * handHeight) + (0.590 * handHeight) = (vh / 2) + (0.140 * handHeight)
+        
+        // Product container height & scale (scale = 0.42 / 0.38 for a snug fit inside the palm):
+        const prodBaseWidth = vw < 640 ? 325 : vw < 1024 ? 400 : 465;
+        const prodScale = vw < 768 ? 0.38 : 0.42;
+        // fullbox.png aspect ratio is 427 / 584 = 0.731
+        const prodRenderedHeight = prodBaseWidth * (427 / 584) * prodScale;
+        
+        // In fullbox.png, bottom edge of jar base is at y = 399, center is at y = 213.5
+        // Distance from center to jar bottom = prodRenderedHeight * ((399 - 213.5) / 427) = prodRenderedHeight * 0.4344
+        const distFromCenterToJarBottom = prodRenderedHeight * 0.4344;
+        
+        // Relative to center of viewport (vh / 2):
+        // Y offset = 0.140 * handHeight - distFromCenterToJarBottom
+        return (0.140 * handHeight) - distFromCenterToJarBottom;
       };
 
       // Set initial centered state
@@ -183,24 +223,23 @@ export default function TravelingProductStage() {
         });
       }
 
-      // SINGLE UNIFIED MASTER TIMELINE (Hero -> Benefits Hand -> Ingredients Hidden -> Purchase Docked)
-      const masterTl = gsap.timeline({
+      // 1. HERO -> BENEFITS PALM JOURNEY (Clamped strictly at the palm)
+      const travelTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#hero',
           start: 'top top',
-          endTrigger: '#purchase',
-          end: 'top 30%',
-          scrub: 0.8,
+          endTrigger: '#benefits',
+          end: 'top 20%',
+          scrub: 0.5,
           invalidateOnRefresh: true,
         },
       });
 
-      // 1. HERO -> BENEFITS SECTION (Center -> Right Hand Palm)
-      masterTl
+      travelTl
         .to(productEl, {
           x: () => getRightHandX(),
           y: () => getTargetOverHandY(),
-          scale: () => (window.innerWidth < 768 ? 0.42 : 0.46),
+          scale: () => (window.innerWidth < 768 ? 0.38 : 0.42),
           rotation: -1.0,
           opacity: 1,
           ease: 'power1.inOut',
@@ -219,42 +258,18 @@ export default function TravelingProductStage() {
           duration: 0.45,
         }, 0.25);
 
-      // 2. BENEFITS SECTION: RESTING STEADILY ON THE PALM (FULLY VISIBLE)
-      masterTl.to(productEl, {
-        x: () => getRightHandX(),
-        y: () => getTargetOverHandY(),
-        scale: () => (window.innerWidth < 768 ? 0.42 : 0.46),
-        rotation: -1.0,
-        opacity: 1,
-        ease: 'none',
-        duration: 0.8,
-      }, 1.0);
-
-      // 3. TRANSITION TO INGREDIENTS: SMOOTH FADE-OUT BEFORE INGREDIENTS HEADING
-      masterTl.to(productEl, {
+      // 2. FADE OUT WHEN SCROLLING AWAY FROM BENEFITS INTO INGREDIENTS
+      gsap.to(productEl, {
+        scrollTrigger: {
+          trigger: '#benefits',
+          start: 'bottom 80%',
+          end: 'bottom 30%',
+          scrub: 0.3,
+          invalidateOnRefresh: true,
+        },
         opacity: 0,
-        ease: 'power1.inOut',
-        duration: 0.3,
-      }, 1.8);
-
-      // 4. THROUGHOUT ENTIRE INGREDIENTS SECTION: STRICTLY 100% HIDDEN (opacity: 0)
-      masterTl.to(productEl, {
-        x: () => getLeftX(),
-        y: () => getPurchaseY(),
-        scale: () => (window.innerWidth < 768 ? 0.78 : 0.88),
-        rotation: 0,
-        opacity: 0,
-        ease: 'power1.inOut',
-        duration: 1.7,
-      }, 2.1);
-
-      // 5. ARRIVING AT PURCHASE: SMOOTH FADE-IN INTO PURCHASE BOX
-      masterTl.to(productEl, {
-        opacity: 1,
-        ease: 'power1.inOut',
-        duration: 0.6,
-      }, 3.8);
-
+        ease: 'power1.out',
+      });
     });
 
     return () => ctx.revert();
@@ -321,7 +336,7 @@ export default function TravelingProductStage() {
           style={{
             transform: orbitEntering ? 'translateY(0px) scale(1)' : 'translateY(70px) scale(0.94)',
             opacity: orbitEntering ? 1 : 0,
-            transition: 'transform 1.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            transition: 'transform 1.1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1)',
           }}
         >
           {/* Back Orbit Guide Ring */}
@@ -491,7 +506,7 @@ export default function TravelingProductStage() {
             className="relative z-30 w-full aspect-[1000/209]"
             style={{
               transform: `translateY(${capEntranceY})`,
-              transition: 'transform 1.85s cubic-bezier(0.14, 0.95, 0.26, 1.0)',
+              transition: 'transform 1.25s cubic-bezier(0.14, 0.95, 0.26, 1.0)',
             }}
           >
             <img
@@ -507,7 +522,7 @@ export default function TravelingProductStage() {
             className="relative z-20 w-full aspect-[727/343] -mt-3 sm:-mt-4"
             style={{
               transform: `translateY(${boxEntranceY})`,
-              transition: 'transform 1.35s cubic-bezier(0.16, 1, 0.3, 1)',
+              transition: 'transform 0.92s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
           >
             <img
@@ -551,7 +566,7 @@ export default function TravelingProductStage() {
           style={{
             transform: orbitEntering ? 'translateY(0px) scale(1)' : 'translateY(70px) scale(0.94)',
             opacity: orbitEntering ? 1 : 0,
-            transition: 'transform 1.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            transition: 'transform 1.1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1)',
           }}
         >
           {/* Front Orbit Guide Ring */}

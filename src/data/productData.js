@@ -127,6 +127,56 @@ export const PRODUCT = {
       date: '2 weeks ago',
       title: 'Remarkable overnight transformation.',
       comment: 'Working late nights used to leave my face dull and fatigued. DERMIVA Repair & Restore has completely revived my skin vitality. Packaging feels like a ₹3,000 international luxury product.'
+    },
+    {
+      id: 4,
+      author: 'Ananya Deshmukh',
+      verified: true,
+      rating: 5,
+      skinType: 'Sensitive / Dehydrated',
+      date: '3 days ago',
+      title: 'Finally, intense hydration without any greasy pillow stains!',
+      comment: 'I have always avoided night creams because of the heavy residue, but this melts right in. My skin feels deeply replenished and calm by morning, especially with air conditioning on all night.'
+    },
+    {
+      id: 5,
+      author: 'Vikram Sengupta',
+      verified: true,
+      rating: 5,
+      skinType: 'Normal / Combination',
+      date: '5 days ago',
+      title: 'Clean formula that truly delivers on skin texture.',
+      comment: 'My morning dullness is noticeably reduced. The texture is velvety, lightweight, and soothing after a long day. It has become an essential part of my simple nighttime routine.'
+    },
+    {
+      id: 6,
+      author: 'Sneha Kapoor',
+      verified: true,
+      rating: 5,
+      skinType: 'Dry / Reactive Skin',
+      date: '1 week ago',
+      title: 'Noticeable bounce and calmed redness in just one week.',
+      comment: 'The Mediterranean olive leaf extract makes such a visible difference. My redness has settled, and my skin feels noticeably firmer and supple when I wake up. Absolutely love the clean ingredients.'
+    },
+    {
+      id: 7,
+      author: 'Kavita Nair',
+      verified: true,
+      rating: 5,
+      skinType: 'Mature / Dry Skin',
+      date: '2 weeks ago',
+      title: 'My holy grail for dull winter skin.',
+      comment: 'Provides that fresh, rested glow even when I only get 6 hours of sleep. It feels soothing on application and leaves my face looking refreshed, nourished, and healthy every morning.'
+    },
+    {
+      id: 8,
+      author: 'Arjun Patel',
+      verified: true,
+      rating: 5,
+      skinType: 'Oily / Prone to Clogging',
+      date: '3 weeks ago',
+      title: 'Lightweight yet deeply restorative.',
+      comment: 'Absorbs within seconds with zero tacky feeling. My skin barrier feels significantly stronger and smoother after two weeks of consistent nightly use. Highly recommend!'
     }
   ],
   faqs: [

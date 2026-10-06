@@ -1,0 +1,31 @@
+/* StrokeText Component Styling */
+.stroke-text-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.stroke-text-container svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.stroke-text-outline {
+  pointer-events: none;
+  user-select: none;
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
+}
+
+.stroke-text-fill {
+  pointer-events: none;
+  user-select: none;
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
+}

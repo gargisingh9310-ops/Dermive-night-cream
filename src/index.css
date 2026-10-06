@@ -138,3 +138,114 @@
   border: 1px solid rgba(135, 155, 122, 0.3);
   box-shadow: 0 0 12px rgba(201, 169, 106, 0.12);
 }
+
+/* Benefit Card Moving Border Glitter Animation */
+@keyframes cardGlitterTravel {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -100;
+  }
+}
+
+.card-glitter-path {
+  animation: cardGlitterTravel 4s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+/* Benefit Card Subtle Float Animations (2-3.5px slow gentle drift) */
+@keyframes benefitCardFloat1 {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes benefitCardFloat2 {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-3.5px); }
+}
+
+@keyframes benefitCardFloat3 {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-2.8px); }
+}
+
+.benefit-card-float-0 {
+  animation: benefitCardFloat1 4.8s ease-in-out infinite;
+}
+
+.benefit-card-float-1 {
+  animation: benefitCardFloat2 5.6s ease-in-out infinite 0.6s;
+}
+
+.benefit-card-float-2 {
+  animation: benefitCardFloat3 5.2s ease-in-out infinite 1.2s;
+}
+
+/* Benefit Card Icon Micro-Pulse */
+@keyframes benefitIconPulse {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.045) rotate(1.2deg); }
+}
+
+.benefit-icon-animated-0 {
+  animation: benefitIconPulse 4.2s ease-in-out infinite;
+}
+
+.benefit-icon-animated-1 {
+  animation: benefitIconPulse 4.8s ease-in-out infinite 0.8s;
+}
+
+.benefit-icon-animated-2 {
+  animation: benefitIconPulse 4.5s ease-in-out infinite 1.5s;
+}
+
+/* Benefit Card Soft Diagonal Light Sweep */
+@keyframes benefitLightSweep {
+  0% {
+    transform: translateX(-160%) skewX(-20deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  25% {
+    transform: translateX(220%) skewX(-20deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(220%) skewX(-20deg);
+    opacity: 0;
+  }
+}
+
+.benefit-light-sweep-0 {
+  animation: benefitLightSweep 8.5s cubic-bezier(0.4, 0, 0.2, 1) infinite 1.5s;
+}
+
+.benefit-light-sweep-1 {
+  animation: benefitLightSweep 9.2s cubic-bezier(0.4, 0, 0.2, 1) infinite 3.8s;
+}
+
+.benefit-light-sweep-2 {
+  animation: benefitLightSweep 8.8s cubic-bezier(0.4, 0, 0.2, 1) infinite 6.0s;
+}
+
+/* Continuous 3D 360-Degree Product Rotation (Ingredient Showcase) */
+@keyframes productRotate360 {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+.product-3d-spin {
+  animation: productRotate360 9.5s linear infinite;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+
+

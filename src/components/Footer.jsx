@@ -1,18 +1,74 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Leaf, ShieldCheck, Heart, Sparkles, ArrowUp } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export default function Footer({ onScrollToSection }) {
+  const footerRef = useRef(null);
+  const gridRef = useRef(null);
+  const bottomBarRef = useRef(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      if (gridRef.current) {
+        const cols = gridRef.current.children;
+        gsap.set(cols, { y: 25, opacity: 0, force3D: true });
+      }
+      if (bottomBarRef.current) {
+        gsap.set(bottomBarRef.current, { y: 15, opacity: 0, force3D: true });
+      }
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: footerRef.current,
+          start: 'top 85%',
+          end: 'bottom 20%',
+          toggleActions: 'play reverse play reverse',
+        },
+      });
+
+      if (gridRef.current) {
+        const cols = gridRef.current.children;
+        tl.to(cols, {
+          y: 0,
+          opacity: 1,
+          duration: 0.75,
+          stagger: 0.1,
+          ease: 'power3.out',
+        }, 0);
+      }
+
+      if (bottomBarRef.current) {
+        tl.to(bottomBarRef.current, {
+          y: 0,
+          opacity: 1,
+          duration: 0.65,
+          ease: 'power3.out',
+        }, 0.3);
+      }
+    }, footerRef);
+
+    return () => ctx.revert();
+  }, []);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <footer className="relative w-full bg-[#24372B] text-[#F7F3E8] border-t border-[#31483A] pt-16 pb-12 overflow-hidden">
+    <footer
+      ref={footerRef}
+      className="relative w-full bg-[#24372B] text-[#F7F3E8] border-t border-[#31483A] pt-16 pb-12 overflow-hidden"
+    >
       <div className="grain-overlay" />
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#3D5948]">
+        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#3D5948]">
           
           {/* Col 1 & 2: Brand & Mission */}
           <div className="lg:col-span-2 space-y-4">
@@ -138,7 +194,7 @@ export default function Footer({ onScrollToSection }) {
         </div>
 
         {/* Bottom Bar & Copyright */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[#E8EBDD]/60">
+        <div ref={bottomBarRef} className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[#E8EBDD]/60">
           <p>© 2026 DERMIVA. All rights reserved. Repair & Restore™ is a registered trademark.</p>
           
           <button

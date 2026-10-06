@@ -1,14 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Minus, ShoppingBag, ShieldCheck, Truck, RotateCcw, ChevronDown, Star } from 'lucide-react';
 import { PRODUCT } from '../data/productData';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+const PRODUCT_GALLERY = [
+  { id: 'front', src: '/front.png', alt: 'DERMIVA Repair & Restore Night Cream - Front View', label: 'Front' },
+  { id: 'back', src: '/back.png', alt: 'DERMIVA Repair & Restore Night Cream - Back View', label: 'Back' },
+  { id: 'left', src: '/left.png', alt: 'DERMIVA Repair & Restore Night Cream - Left View', label: 'Left' },
+  { id: 'right', src: '/right.png', alt: 'DERMIVA Repair & Restore Night Cream - Right View', label: 'Right' },
+];
 
 export default function ProductPurchase({ onAddToCart }) {
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [purchaseType, setPurchaseType] = useState('one-time');
   const [openAccordion, setOpenAccordion] = useState('how-to-use');
   const [addedAnimation, setAddedAnimation] = useState(false);
 
+  const sectionRef = useRef(null);
+  const leftColRef = useRef(null);
+  const rightColRef = useRef(null);
+
   const price = purchaseType === 'subscribe' ? Math.round(PRODUCT.price * 0.8) : PRODUCT.price;
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      if (leftColRef.current) {
+        gsap.set(leftColRef.current, { y: 30, opacity: 0, scale: 0.97, force3D: true });
+      }
+      if (rightColRef.current) {
+        const children = rightColRef.current.children;
+        gsap.set(children, { y: 22, opacity: 0, force3D: true });
+      }
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top 75%',
+          end: 'bottom 20%',
+          toggleActions: 'play reverse play reverse',
+        },
+      });
+
+      if (leftColRef.current) {
+        tl.to(leftColRef.current, {
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          duration: 0.8,
+          ease: 'power3.out',
+        }, 0);
+      }
+
+      if (rightColRef.current) {
+        const children = rightColRef.current.children;
+        tl.to(children, {
+          y: 0,
+          opacity: 1,
+          duration: 0.7,
+          stagger: 0.08,
+          ease: 'power3.out',
+        }, 0.12);
+      }
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
 
   const handleAdd = () => {
     onAddToCart(PRODUCT, quantity);
@@ -19,68 +81,106 @@ export default function ProductPurchase({ onAddToCart }) {
   return (
     <section
       id="purchase"
-      className="relative w-full py-20 md:py-32 bg-[#E8EBDD] text-[#27352D] overflow-hidden"
+      ref={sectionRef}
+      className="relative w-full py-16 md:py-24 bg-[#E8EBDD] text-[#27352D] overflow-hidden"
     >
+      <style>{`
+        @keyframes purchaseImgFadeIn {
+          from { opacity: 0.65; transform: scale(0.98); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .animate-img-switch {
+          animation: purchaseImgFadeIn 0.3s ease-out forwards;
+        }
+      `}</style>
       <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-[#FFFFFF]/60 rounded-full blur-[110px] pointer-events-none" />
       <div className="grain-overlay" />
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
           
           {/* Left Column: Dedicated Visual Stage for the Traveling Product (Settled on LEFT) */}
-          <div className="lg:col-span-6 relative flex flex-col items-center justify-center">
+          <div ref={leftColRef} className="lg:col-span-6 relative flex flex-col items-center justify-center">
             
             <div
               id="purchase-product-box"
-              className="relative w-full max-w-lg aspect-square rounded-3xl bg-white border border-[#C9D2C2] p-8 flex items-center justify-center shadow-[0_8px_30px_rgba(49,72,58,0.06)] overflow-hidden group"
+              className="relative w-full max-w-[420px] lg:max-w-[440px] aspect-square rounded-3xl bg-white border border-[#C9D2C2] p-6 sm:p-7 flex items-center justify-center shadow-[0_8px_30px_rgba(49,72,58,0.06)] overflow-hidden group"
             >
               
               {/* Core Sage Aura behind traveling product */}
               <div className="absolute inset-8 bg-[#879B7A]/15 rounded-full blur-3xl pointer-events-none animate-pulse-slow" />
 
               {/* Floating 50 ml Badge */}
-              <div className="absolute top-6 left-6 z-20 px-3.5 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-[#C9D2C2] text-[#31483A] text-[10px] font-mono tracking-widest uppercase font-semibold shadow-sm">
+              <div className="absolute top-5 left-5 z-20 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md border border-[#C9D2C2] text-[#31483A] text-[10px] font-mono tracking-widest uppercase font-semibold shadow-sm">
                 50 ML / 1.7 FL. OZ.
               </div>
 
               {/* Verified Dermatology Seal */}
-              <div className="absolute bottom-6 right-6 z-20 px-3.5 py-1.5 rounded-full bg-[#E8EBDD] backdrop-blur-md border border-[#C9D2C2] text-[#31483A] text-[10px] font-mono tracking-widest uppercase flex items-center gap-1.5 font-semibold shadow-sm">
-                <ShieldCheck size={13} className="text-[#31483A]" />
+              <div className="absolute bottom-5 right-5 z-20 px-3 py-1 rounded-full bg-[#E8EBDD] backdrop-blur-md border border-[#C9D2C2] text-[#31483A] text-[10px] font-mono tracking-widest uppercase flex items-center gap-1.5 font-semibold shadow-sm">
+                <ShieldCheck size={12} className="text-[#31483A]" />
                 <span>CLINICALLY TESTED</span>
               </div>
 
-              {/* Product Image in White Box */}
+              {/* Product Image in White Box (Occupies ~72-75% of the box area) */}
               <div
                 id="purchase-docked-product"
-                className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 select-none"
+                className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 select-none p-6"
               >
-                <div className="w-[325px] sm:w-[400px] lg:w-[465px] flex items-center justify-center">
+                <div className="w-full h-full flex items-center justify-center">
                   <img
-                    src="/fullbox.png"
-                    alt="DERMIVA Repair & Restore Night Cream"
-                    className="w-full h-auto object-contain select-none pointer-events-none scale-[0.78] sm:scale-[0.88]"
+                    key={selectedImageIndex}
+                    src={PRODUCT_GALLERY[selectedImageIndex].src}
+                    alt={PRODUCT_GALLERY[selectedImageIndex].alt}
+                    className="w-auto h-auto max-w-[74%] max-h-[72%] object-contain select-none pointer-events-none animate-img-switch transition-all duration-300"
                     draggable={false}
                   />
                 </div>
               </div>
             </div>
 
+            {/* 4 Thumbnail Image Gallery Directly Below Main Image */}
+            <div className="grid grid-cols-4 gap-2.5 sm:gap-3 w-full max-w-[420px] lg:max-w-[440px] mt-3.5">
+              {PRODUCT_GALLERY.map((item, idx) => {
+                const isSelected = selectedImageIndex === idx;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setSelectedImageIndex(idx)}
+                    aria-label={`Select ${item.label} view`}
+                    className={`relative aspect-square rounded-xl sm:rounded-2xl bg-white p-1.5 sm:p-2 flex items-center justify-center cursor-pointer transition-all duration-300 shadow-sm focus:outline-none ${
+                      isSelected
+                        ? 'border-2 border-[#C9A96A] ring-2 ring-[#C9A96A]/20 shadow-md shadow-[#C9A96A]/15 scale-[1.02] bg-[#FAF8F2]'
+                        : 'border border-[#C9D2C2] hover:border-[#879B7A] hover:bg-[#F7F3E8]/40 opacity-75 hover:opacity-100'
+                    }`}
+                  >
+                    <img
+                      src={item.src}
+                      alt={item.alt}
+                      className="w-full h-full object-contain select-none pointer-events-none"
+                      draggable={false}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+
             {/* Micro Feature Indicators */}
-            <div className="grid grid-cols-3 gap-4 w-full max-w-lg mt-6 text-center">
-              <div className="p-3.5 rounded-2xl bg-white border border-[#C9D2C2] shadow-sm">
+            <div className="grid grid-cols-3 gap-3 w-full max-w-[420px] lg:max-w-[440px] mt-3.5 text-center">
+              <div className="p-3 rounded-2xl bg-white border border-[#C9D2C2] shadow-sm">
                 <span className="text-[10px] font-mono tracking-widest text-[#879B7A] uppercase block mb-0.5 font-semibold">
                   SHELF LIFE
                 </span>
                 <span className="text-xs text-[#31483A] font-medium">24 Months</span>
               </div>
-              <div className="p-3.5 rounded-2xl bg-white border border-[#C9D2C2] shadow-sm">
+              <div className="p-3 rounded-2xl bg-white border border-[#C9D2C2] shadow-sm">
                 <span className="text-[10px] font-mono tracking-widest text-[#879B7A] uppercase block mb-0.5 font-semibold">
                   FORMULATION
                 </span>
                 <span className="text-xs text-[#31483A] font-medium">100% Clean</span>
               </div>
-              <div className="p-3.5 rounded-2xl bg-white border border-[#C9D2C2] shadow-sm">
+              <div className="p-3 rounded-2xl bg-white border border-[#C9D2C2] shadow-sm">
                 <span className="text-[10px] font-mono tracking-widest text-[#879B7A] uppercase block mb-0.5 font-semibold">
                   ORIGIN
                 </span>
@@ -91,7 +191,7 @@ export default function ProductPurchase({ onAddToCart }) {
           </div>
 
           {/* Right Column: Premium Purchase & Conversion Box */}
-          <div className="lg:col-span-6 flex flex-col justify-center">
+          <div ref={rightColRef} className="lg:col-span-6 flex flex-col justify-center">
             
             {/* Review Stars & Badges */}
             <div className="flex items-center gap-2 mb-3">

@@ -7,10 +7,10 @@ export default function Hero({ onShopNow, onExploreFormula }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const t1 = setTimeout(() => setStage(1), 100);
-    const t2 = setTimeout(() => setStage(2), 400);
-    const t3 = setTimeout(() => setStage(3), 800);
-    const t4 = setTimeout(() => setStage(4), 1100);
+    const t1 = setTimeout(() => setStage(1), 70);
+    const t2 = setTimeout(() => setStage(2), 270);
+    const t3 = setTimeout(() => setStage(3), 540);
+    const t4 = setTimeout(() => setStage(4), 750);
 
     return () => {
       clearTimeout(t1);
